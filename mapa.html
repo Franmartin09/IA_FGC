@@ -177,8 +177,8 @@
     }
 
     ImprimirRutas();
-    // Actualizar cada 60 segundos (60000 milisegundos)
-    setInterval(actualizarDatos, 3000);
+    // Actualizar cada 20 segundos (20000 milisegundos)
+    setInterval(actualizarDatos, 20000);
     
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(function(position) {
