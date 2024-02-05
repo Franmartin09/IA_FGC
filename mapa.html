@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapa Leaflet</title>
+  <!-- Incluye Leaflet desde CDN -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <!-- Asegúrate de incluir también los estilos del proveedor de mapas que elijas, como OpenStreetMap -->
+  <style>
+    #map {
+      margin-top: 45px;
+      margin-left: 50%;
+      height: 90vh;
+      width: 50vw;
+      position: relative; /* Añadido para posicionar el div de leyenda de forma absoluta */
+    }
+
+    /* Estilos para el dropup */
+    .dropup {
+      position: absolute; /* Cambiado a absolute para posicionar el dropup encima del mapa */
+      right: 10px; /* Ajusta la posición horizontal según tus necesidades */
+      top: 88vh;
+      z-index: 1000;
+    }
+
+    .dropup button {
+      padding: 10px; /* Añadido espacio alrededor del botón para facilitar el clic */
+    }
+
+    .dropup-content {
+      display: none;
+      position: absolute;
+      background-color: #f1f1f1;
+      min-width: 160px;
+      box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+      padding: 12px;
+      bottom: 30px;
+      right: 0; /* Cambiado a right para alinear a la derecha */
+      z-index: 1000;
+    }
+
+    .dropup:hover .dropup-content {
+      display: block;
+      z-index: 1000;
+    }
+
+    /* Estilos para los cuadrados de colores */
+    .color-square {
+      width: 20px;
+      height: 20px;
+      display: inline-block;
+      margin-right: 8px;
+      z-index: 1000;
+    }
+    .color-square[data-line="S1"] { background-color: #ff0000; }
+    .color-square[data-line="S2"] { background-color: #00ff00; }
+    .color-square[data-line="S3"] { background-color: #0000ff; }
+    .color-square[data-line="S4"] { background-color: #ffcc00; }
+    .color-square[data-line="S8"] { background-color: #9900cc; }
+    .color-square[data-line="L6"] { background-color: #ff9900; }
+    .color-square[data-line="L7"] { background-color: #33cc33; }
+    .color-square[data-line="L8"] { background-color: #663300; }
+    .color-square[data-line="L12"] { background-color: #cc66ff; }
+    .color-square[data-line="R5"] { background-color: #3366ff; }
+    .color-square[data-line="R6"] { background-color: #ff6699; }
+    .color-square[data-line="RL2"] { background-color: #ff3366; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <div class="dropup">
+    <button>Lineas</button>
+    <div class="dropup-content">
+      <div>
+        <div class="color-square" style="background-color: #ff0000;" data-line="S1"></div> S1
+      </div>
+      <div>
+        <div class="color-square" style="background-color: #00ff00;" data-line="S2"></div> S2
+      </div>
+      <div>
+        <div class="color-square" style="background-color: #0000ff;" data-line="S3"></div> S3
+      </div>
+      <div>
+        <div class="color-square" style="background-color: #ffcc00;" data-line="S4"></div> S4
+      </div>
+      <div>
+        <div class="color-square" style="background-color: #9900cc;" data-line="S8"></div> S8
+      </div>
+      <div>
+        <div class="color-square" style="background-color: #ff9900;" data-line="L6"></div> L6
+      </div>
+      <div>
+        <div class="color-square" style="background-color: #33cc33;" data-line="L7"></div> L7
+      </div>
+      <div>
+        <div class="color-square" style="background-color: #663300;" data-line="L8"></div> L8
+      </div>
+      <div>
+        <div class="color-square" style="background-color: #cc66ff;" data-line="L12"></div> L12
+      </div>
+      <div>
+        <div class="color-square" style="background-color: #3366ff;" data-line="R5"></div> R5
+      </div>
+      <div>
+        <div class="color-square" style="background-color: #ff6699;" data-line="R6"></div> R6
+      </div>
+      <div>
+        <div class="color-square" style="background-color: #ff3366;" data-line="RL2"></div> RL2
+      </div>
+    </div>
+  </div>
+
+  <!-- 2A3C3F -->
+
+<!-- Incluye Leaflet desde CDN -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+    var accessToken = 'pk.eyJ1IjoiZnJhbm1hMDkiLCJhIjoiY2xzNjA0eHNtMW5tbTJtcncxZTRwODJlNyJ9.zd01pgWyMSDLp7IyYPR1Pg';
+    var mymap = L.map('map').setView([41.505, 2.09], 8.5);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(mymap);
+
+     // Función para realizar la solicitud AJAX y actualizar el marcador de paradas
+    function ImprimirParadas() {
+      fetch('http://127.0.0.1:5000/get_paradas')
+          .then(response => response.json())
+          .then(data => {
+              // Iterate through each object in the array
+          })
+          .catch(error => console.error('Error obteniendo datos:', error));
+    }
+
+    // Función para realizar la solicitud AJAX y actualizar el marcador de rutas
+    function ImprimirRutas() {
+      fetch('http://127.0.0.1:5000/get_path')
+          .then(response => response.json())
+          .then(data => {
+              data.forEach(obj => {
+                var coordinates = obj.shape;
+                var polyline = L.polyline(coordinates, { color: '#0000FF' }).addTo(mymap);
+                var popupContent = "Información de la línea aquí";
+                polyline.bindPopup(popupContent);
+              });
+          })
+          .catch(error => console.error('Error obteniendo datos:', error));
+    }
+
+    var markersArray = [];
+    // Función para realizar la solicitud AJAX y actualizar el marcador de trenes
+    function actualizarDatos() {
+      var cacheBuster = Math.random().toString(36).substring(7);
+      fetch(`http://127.0.0.1:5000/get_data?cache=${cacheBuster}`)
+          .then(response => response.json())
+          .then(data => {
+              // Iterate through each object in the array
+              data.forEach(obj => {
+                  var linea = obj.linea;
+                  var geoPosicion = obj.geo_posicion;
+                  var ocupacion = obj.ocupacion;
+                  var origen = obj.origen;
+                  var destino = obj.destino;
+
+                  var popupContent = "<b>Línea:</b> " + linea + "<br><b>Ocupación:</b> " + ocupacion+ "<br><b>Origen:</b> " + origen + "<br><b>Destino:</b> " + destino+ "<br><b>Geopos:</b> " + geoPosicion;
+
+                  var existingMarker = markersArray.find(marker => marker.options.linea === linea && marker.options.origen === origen && marker.options.destino === destino);
+
+                  if (existingMarker) {
+                      // Si el marcador existe, actualiza su posición y contenido emergente
+                      existingMarker.setLatLng(geoPosicion);
+                      existingMarker.getPopup().setContent(popupContent);
+                  } else {
+                      // Si el marcador no existe, crea uno nuevo y añádelo al array de marcadores
+                      var newMarker = L.marker(geoPosicion).addTo(mymap).bindPopup(popupContent);
+                      newMarker.options.linea = linea;
+                      newMarker.options.origen = origen;
+                      newMarker.options.destino = destino;
+                      markersArray.push(newMarker);
+                  }
+              });
+          })
+          .catch(error => console.error('Error obteniendo datos:', error));
+    }
+
+    ImprimirRutas();
+    // Actualizar cada 60 segundos (60000 milisegundos)
+    setInterval(actualizarDatos, 3000);
+    
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        // Obtiene las coordenadas de la ubicación actual
+        var lat = position.coords.latitude;
+        var lon = position.coords.longitude;
+
+        // Centra el mapa en la ubicación actual del usuario
+        mymap.setView([lat, lon], 13);
+
+      }, function(error) {
+        console.error('Error obteniendo la ubicación:', error.message);
+      });
+    } else {
+      console.error('Geolocalización no soportada en este navegador.');
+    }
+</script>
+
+</body>
+</html>
