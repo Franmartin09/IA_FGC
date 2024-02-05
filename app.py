@@ -77,7 +77,7 @@ def obtener_datos_desde_python():
 
 def obtener_rutas():
        # URL de la página que contiene los datos en tiempo real
-    url = 'https://dadesobertes.fgc.cat/api/records/1.0/search/?dataset=gtfs_routes&timezone=Europe%2FMadrid'
+    url = 'https://dadesobertes.fgc.cat/api/records/1.0/search/?dataset=gtfs_routes&rows=10000&timezone=Europe%2FMadrid'
     try:
         # Descarga los datos de la URL
         response = requests.get(url)
@@ -91,8 +91,8 @@ def obtener_rutas():
             # Invierte las coordenadas en cada punto
             inverted_coordinates = [[[coord[1], coord[0]] for coord in line] for line in obj['fields']['shape']['coordinates']]
 
-            data_routes.append({'linea': obj['fields']['route_short_name'], 'shape': inverted_coordinates[0]})
-            print(inverted_coordinates)
+            data_routes.append({'linea': obj['fields']['route_short_name'], 'shape': inverted_coordinates[0], 'direccion': obj['fields']['route_long_name'], 'tipo': obj['fields']['route_type'], 'color': obj['fields']['route_color']}) 
+            print(obj['fields']['route_short_name'])
             print("_________________________________")
 
         return data_routes

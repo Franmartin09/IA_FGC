@@ -71,43 +71,7 @@
   <div id="map"></div>
   <div class="dropup">
     <button>Lineas</button>
-    <div class="dropup-content">
-      <div>
-        <div class="color-square" style="background-color: #ff0000;" data-line="S1"></div> S1
-      </div>
-      <div>
-        <div class="color-square" style="background-color: #00ff00;" data-line="S2"></div> S2
-      </div>
-      <div>
-        <div class="color-square" style="background-color: #0000ff;" data-line="S3"></div> S3
-      </div>
-      <div>
-        <div class="color-square" style="background-color: #ffcc00;" data-line="S4"></div> S4
-      </div>
-      <div>
-        <div class="color-square" style="background-color: #9900cc;" data-line="S8"></div> S8
-      </div>
-      <div>
-        <div class="color-square" style="background-color: #ff9900;" data-line="L6"></div> L6
-      </div>
-      <div>
-        <div class="color-square" style="background-color: #33cc33;" data-line="L7"></div> L7
-      </div>
-      <div>
-        <div class="color-square" style="background-color: #663300;" data-line="L8"></div> L8
-      </div>
-      <div>
-        <div class="color-square" style="background-color: #cc66ff;" data-line="L12"></div> L12
-      </div>
-      <div>
-        <div class="color-square" style="background-color: #3366ff;" data-line="R5"></div> R5
-      </div>
-      <div>
-        <div class="color-square" style="background-color: #ff6699;" data-line="R6"></div> R6
-      </div>
-      <div>
-        <div class="color-square" style="background-color: #ff3366;" data-line="RL2"></div> RL2
-      </div>
+    <div class="dropup-content" id="lineasContent">
     </div>
   </div>
 
@@ -141,9 +105,27 @@
           .then(data => {
               data.forEach(obj => {
                 var coordinates = obj.shape;
+                var color = obj.color;
+                var linea = obj.linea;
+                var direccion = obj.direccion;
+                var tipo = obj.tipo;
+                var color = obj.color;
+
                 var polyline = L.polyline(coordinates, { color: '#0000FF' }).addTo(mymap);
-                var popupContent = "Información de la línea aquí";
+                var popupContent = "<b>Línea:</b> " + linea + "<br><b>Direccion:</b> " + direccion+ "<br><b>Tipo:</b> " + tipo;
                 polyline.bindPopup(popupContent);
+
+                var lineDiv = document.createElement("div");
+                lineDiv.innerHTML = "<div class='color-square' style='background-color: " + '#'+color + ";' data-line='"+linea+"'></div>" + linea ;
+
+                // Agrega el elemento div al contenedor
+                document.getElementById("lineasContent").appendChild(lineDiv);
+
+                // Asociar un manejador de clic al elemento div si es necesario
+                lineDiv.addEventListener("click", function() {
+                // Lógica para manejar el clic en la línea, si es necesario
+                  console.log("Línea " + linea + " clickeada");
+                });
               });
           })
           .catch(error => console.error('Error obteniendo datos:', error));
