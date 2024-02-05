@@ -80,9 +80,18 @@
 <!-- Incluye Leaflet desde CDN -->
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
+<!-- Incluye el plugin leaflet-boundary-canvas -->
+<script src="https://unpkg.com/leaflet-boundary-canvas/leaflet-boundary-canvas.js"></script>
+
 <script>
     var accessToken = 'pk.eyJ1IjoiZnJhbm1hMDkiLCJhIjoiY2xzNjA0eHNtMW5tbTJtcncxZTRwODJlNyJ9.zd01pgWyMSDLp7IyYPR1Pg';
-    var mymap = L.map('map').setView([41.505, 2.09], 8.5);
+    var mymap = L.map('map', {
+      minZoom: 4,
+      maxZoom: 18, 
+      maxBounds: L.latLngBounds(
+        L.latLng(-90, -180), // Límite inferior izquierdo
+        L.latLng(90, 180)    // Límite superior derecho
+    )}).setView([41.505, 2.09], 8.5);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
