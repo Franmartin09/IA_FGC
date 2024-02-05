@@ -26,6 +26,9 @@
 
     .dropup button {
       padding: 10px; /* Añadido espacio alrededor del botón para facilitar el clic */
+      outline:none;
+      cursor:pointer;
+      border:none;
     }
 
     .dropup-content {
@@ -53,7 +56,51 @@
       margin-right: 8px;
       z-index: 1000;
     }
-    .color-square[data-line="S1"] { background-color: #ff0000; }
+
+
+    #layer-hover {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background-color: #fff;
+        padding: 15px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    #hover-btn-map {
+      position: absolute; /* Cambiado a absolute para posicionar el dropup encima del mapa */
+      right: 45%; /* Ajusta la posición horizontal según tus necesidades */
+      top: 85vh;
+      z-index: 1000;
+      padding: 30px;
+      padding-top: 35px;
+      padding-bottom: 35px;
+      cursor: pointer;
+      border: none;
+      border-radius: 3px;
+      outline: none;
+      
+    }
+    #hover-btn-map:hover {
+      border: 1px solid black;
+      
+    }
+    .minimap-classic{
+      background-color: #007BFF;
+      color: #fff;
+      background-image: url('satelite_capa.png');
+      background-size: cover;
+    }
+
+    .minimap-satellite{
+      background-color: #ff0000;
+      color: #fff;
+      background-image: url('map_capa.png');
+      background-size: cover;
+    }
+       
+    /* .color-square[data-line="S1"] { background-color: #ff0000; }
     .color-square[data-line="S2"] { background-color: #00ff00; }
     .color-square[data-line="S3"] { background-color: #0000ff; }
     .color-square[data-line="S4"] { background-color: #ffcc00; }
@@ -64,15 +111,25 @@
     .color-square[data-line="L12"] { background-color: #cc66ff; }
     .color-square[data-line="R5"] { background-color: #3366ff; }
     .color-square[data-line="R6"] { background-color: #ff6699; }
-    .color-square[data-line="RL2"] { background-color: #ff3366; }
+    .color-square[data-line="RL2"] { background-color: #ff3366; } */
   </style>
 </head>
 <body>
   <div id="map"></div>
+  <div id="layer-toggle">
+    <button id="hover-btn-map" class="minimap-classic" onclick="ToggleLayer(1)">Map</button>
+    <!-- <button id="hover-btn-satellite" class="active" onclick="ToggleLayer(1)" style="margin: 4px;padding: 8px;cursor: pointer;border: none;border-radius: 3px;outline: none; display:none;">Classic</button> -->
+  </div>
+  <div id="layer-hover">
+    <button id="map-btn" class="active" onclick="ToggleHoverLayer(1)" style="margin: 4px;padding: 8px;cursor: pointer;border: none; border-radius: 3px;outline: none;">Map</button>
+    <button id="satellite-btn" onclick="ToggleHoverLayer(2)" style="margin: 4px;padding: 8px;cursor: pointer;border: none;border-radius: 3px;outline: none;">Classic</button>
+    <button id="calssic-btn" onclick="ToggleHoverLayer(3)" style="margin: 4px;padding: 8px;cursor: pointer;border: none;border-radius: 3px;outline: none;">Satellite</button>
+    <button id="satellite-street-btn" onclick="ToggleHoverLayer(4)" style="margin: 4px;padding: 8px;cursor: pointer;border: none;border-radius: 3px;outline: none;">Satellite + Street</button>
+    <button id="dark-btn" onclick="ToggleHoverLayer(5)" style="margin: 4px;padding: 8px;cursor: pointer;border: none;border-radius: 3px;outline: none;">Dark</button>
+  </div>
   <div class="dropup">
     <button>Lineas</button>
-    <div class="dropup-content" id="lineasContent">
-    </div>
+    <div class="dropup-content" id="lineasContent"> </div>
   </div>
 
   <!-- 2A3C3F -->
@@ -84,6 +141,7 @@
 <script src="https://unpkg.com/leaflet-boundary-canvas/leaflet-boundary-canvas.js"></script>
 
 <script>
+    var markersTrainsArray = [];
     var accessToken = 'pk.eyJ1IjoiZnJhbm1hMDkiLCJhIjoiY2xzNjA0eHNtMW5tbTJtcncxZTRwODJlNyJ9.zd01pgWyMSDLp7IyYPR1Pg';
     var mymap = L.map('map', {
       minZoom: 4,
@@ -93,11 +151,9 @@
         L.latLng(90, 180)    // Límite superior derecho
     )}).setView([41.505, 2.09], 8.5);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(mymap);
+    ToggleHoverLayer(1);
 
-     // Función para realizar la solicitud AJAX y actualizar el marcador de paradas
+    // Función para realizar la solicitud AJAX y actualizar el marcador de paradas
     function ImprimirParadas() {
       fetch('http://127.0.0.1:5000/get_paradas')
           .then(response => response.json())
@@ -126,8 +182,6 @@
 
                 var lineDiv = document.createElement("div");
                 lineDiv.innerHTML = "<div class='color-square' style='background-color: " + '#'+color + ";' data-line='"+linea+"'></div>" + linea ;
-
-                // Agrega el elemento div al contenedor
                 document.getElementById("lineasContent").appendChild(lineDiv);
 
                 // Asociar un manejador de clic al elemento div si es necesario
@@ -140,7 +194,6 @@
           .catch(error => console.error('Error obteniendo datos:', error));
     }
 
-    var markersArray = [];
     // Función para realizar la solicitud AJAX y actualizar el marcador de trenes
     function actualizarDatos() {
       var cacheBuster = Math.random().toString(36).substring(7);
@@ -157,7 +210,7 @@
 
                   var popupContent = "<b>Línea:</b> " + linea + "<br><b>Ocupación:</b> " + ocupacion+ "<br><b>Origen:</b> " + origen + "<br><b>Destino:</b> " + destino+ "<br><b>Geopos:</b> " + geoPosicion;
 
-                  var existingMarker = markersArray.find(marker => marker.options.linea === linea && marker.options.origen === origen && marker.options.destino === destino);
+                  var existingMarker = markersTrainsArray.find(marker => marker.options.linea === linea && marker.options.origen === origen && marker.options.destino === destino);
 
                   if (existingMarker) {
                       // Si el marcador existe, actualiza su posición y contenido emergente
@@ -169,7 +222,7 @@
                       newMarker.options.linea = linea;
                       newMarker.options.origen = origen;
                       newMarker.options.destino = destino;
-                      markersArray.push(newMarker);
+                      markersTrainsArray.push(newMarker);
                   }
               });
           })
@@ -177,6 +230,7 @@
     }
 
     ImprimirRutas();
+    
     // Actualizar cada 20 segundos (20000 milisegundos)
     setInterval(actualizarDatos, 20000);
     
@@ -195,6 +249,81 @@
     } else {
       console.error('Geolocalización no soportada en este navegador.');
     }
+    
+    function ToggleHoverLayer(value)
+    {
+      if(value==1){ //NORMAL
+        L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=' + accessToken, {
+          attribution: '© Mapbox, © OpenStreetMap contributors',
+          maxZoom: 18,
+          minZoom: 4,
+          id: 'mapbox/streets-v12',
+          tileSize: 512,
+          zoomOffset: -1
+        }).addTo(mymap);
+      }else if(value==2){ //CLASSIC
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors'
+        }).addTo(mymap);
+      }else if(value==3){ //SATELITE
+        L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=' + accessToken, {
+          attribution: '© Mapbox, © OpenStreetMap contributors',
+          maxZoom: 18,
+          minZoom: 4,
+          id: 'mapbox/satellite-v9',
+          tileSize: 512,
+          zoomOffset: -1
+        }).addTo(mymap);
+      }else if(value==4){ //SATELITE STREETS
+        L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=' + accessToken, {
+          attribution: '© Mapbox, © OpenStreetMap contributors',
+          maxZoom: 18,
+          minZoom: 4,
+          id: 'mapbox/satellite-streets-v12',
+          tileSize: 512,
+          zoomOffset: -1
+        }).addTo(mymap);
+      }else if(value==5){ //DARK
+        L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=' + accessToken, {
+          attribution: '© Mapbox, © OpenStreetMap contributors',
+          maxZoom: 18,
+          minZoom: 4,
+          id: 'mapbox/navigation-night-v1',
+          tileSize: 512,
+          zoomOffset: -1
+        }).addTo(mymap);
+      }
+    }
+    function ToggleLayer(value)
+    {
+      // Assuming the element has an ID 'yourElementId'
+      var classes = document.getElementById('hover-btn-map').classList;
+
+      if(classes.contains('minimap-satellite')){ //NORMAL
+        document.getElementById('hover-btn-map').className = 'minimap-classic';
+        L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=' + accessToken, {
+          attribution: '© Mapbox, © OpenStreetMap contributors',
+          maxZoom: 18,
+          minZoom: 4,
+          id: 'mapbox/streets-v12',
+          tileSize: 512,
+          zoomOffset: -1
+        }).addTo(mymap);
+      }else if(classes.contains('minimap-classic')){ //SATELLITE
+        document.getElementById('hover-btn-map').className = 'minimap-satellite';
+        L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=' + accessToken, {
+          attribution: '© Mapbox, © OpenStreetMap contributors',
+          maxZoom: 18,
+          minZoom: 4,
+          id: 'mapbox/satellite-v9',
+          tileSize: 512,
+          zoomOffset: -1
+        }).addTo(mymap);
+      }
+    }
+
+
+
 </script>
 
 </body>
